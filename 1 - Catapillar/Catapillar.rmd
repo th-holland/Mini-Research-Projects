@@ -1,0 +1,237 @@
+---
+title: Plasticine Caterpillar Practical
+author: Thomas Holland
+date: 1st November 2022
+output: html_document
+bibliography: [citations.bib]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
+
+library(ggplot2)
+```
+
+# Introduction
+
+The aim of this experiment is to evaluate the adaptive advantages that the colours and patterning have on the survival rates of caterpillars. 
+For this experiment, we limited our colour styles to an aposematic red and black striped colour patterning; a solid green colour that acts as a non-aposematic nor camouflaged caterpillar; and a solid brown colour to act as a camouflaged caterpillar.
+
+These colour patterns were left at set heights on trees of similar dimensions for a period of 36 hours. The caterpillars were then collected and any marks found were categories based on likely predator source (birds, insects, mammalian or snails) and then quantitatively scored on levels of damage.
+
+We also recorded several other variables that we thought may have had an affect on the attack rate on the caterpillars. These co-variables included the geographical location (through the College location), the tree species and size (diameter), height at which the caterpillars were set, and the habitat type.
+
+The analysed results showed 
+
+# Methods
+
+## Creating and setting caterpillars
+
+We followed a standardised procedure to create the caterpillars that resulted in consistent sizes, patterning and shapes. All three colourways were created by cutting lengths of plasticine into 5 mm lengths, and rejoining in the correct pattering. This consistency across all colourways ensured that the caterpillars not only were all of the similar dimension but also it reduced the likelihood of any bias in the results due different manhandling of the caterpillars.
+
+We individually selected suitable trees based on preset criteria, specifically as diameter and distance from closest pathway. We set the a set of black and red; brown; and green caterpillars at 30cm above the ground at 15cm horizontal spacing, and repeated this placement at 45 cm and 60 cm above the ground. This ensured that the caterpillars were set at a range of heights and that the caterpillars were not set too close to each other. 
+
+At this point we also recorded the tree species, diameter, and habitat type. We also recorded the geographical location of the tree using the College's location.
+
+## Analysing caterpillars
+
+We collected the caterpillars after 36 hours and recorded the number of marks on each caterpillar. We then categorised the marks based on likely predator source (birds, insects, mammalian or snails) and then quantitatively scored on levels of damage. We also recorded if any of the caterpillars were moved from their original position and if any were missing.
+
+We utilised the schematics for predation sources from @low_determining_2014 to help us categorise each mark. We scaled the damage based on number of discrete bite marks for birds, mammals or insects, and the proportionate surface area coverage for snails on a scale of 1-10.
+
+The results were then collated for analysis in a dataset that recorded each of the variables mentioned above.
+
+## Results data analysis
+
+The data was initially cleaned to remove any entries with missing values and to remove any caterpillars that were missing. The dataset can be viewed in the research repository listed at the top of this report.
+
+Following on from the method above, initial analysis included general means and standard deviations across the population as well as based on the damage categories.
+
+Further analysis was then completed to compare the damage levels between the different colourways to assess if there was any significant difference between the colourways. 
+
+Out of further interest, analysis was done based on the height of caterpillars compared to the source of damage to see if there was any significant linkage between these values.
+
+# Results
+
+## General averages
+
+
+```{r}
+# import data.csv
+data <- read.csv("data.csv", header = TRUE, sep = ",")
+
+# remove blank rows
+data <- data[complete.cases(data), ]
+
+# remove data that has RG in Colour..B.RB.G. row
+data <- data[data$Colour..B.RB.G. != "RG", ]
+# remove any spaces in Colour..B.RB.G.
+data$Colour..B.RB.G. <- gsub(" ", "", data$Colour..B.RB.G.)
+
+#save data to csv
+write.csv(data, "data_clean.csv")
+
+# remove missing catipillars where "missing" is in the missing..fallen column
+
+data <- data[!grepl("missing", data$missing..fallen), ]
+```
+
+
+
+```{r}
+# generate table for the averages of the total bites (All.Bites) grouped by the colours given in column Colour..B.RB.G. with their standard deviation
+
+average.table <- aggregate(data$All.Bites, by=list(data$Colour..B.RB.G), FUN=mean)
+
+# for each colour in the average.table, find the standard deviation of the bites and add it to the table
+# then print each average with its standard deviation
+
+for (i in 1:nrow(average.table)) {
+  colour <- average.table[i, 1]
+  average <- average.table[i, 2]
+  sd <- sd(data[data$Colour..B.RB.G == colour, ]$All.Bites)
+  #print(paste(colour, ":", average, "±", sd))
+}
+```
+
+The averages for the total number of bites per caterpillar are shown in the table below with the standard deviation for each colourway.
+
+| Colour | Average | Standard Deviation |
+|--------|---------|--------------------|
+| Brown      | `r average.table[1, 2]` | `r sd(data[data$Colour..B.RB.G == "B", ]$All.Bites)` |
+| Green     | `r average.table[2, 2]` | `r sd(data[data$Colour..B.RB.G == "G", ]$All.Bites)` |
+| Red Black     | `r average.table[3, 2]` | `r sd(data[data$Colour..B.RB.G == "RB", ]$All.Bites)` |
+
+This is shown in the box plot below:
+
+```{r}
+# plot a box plot of All.Bites grouped by colour Colour..B.RB.G. from dataset data
+# label the x axis as Colour and the y axis as Number of Total Bites
+# rename the groups where B is Brown, RB is Red and G is Green
+# title the plot "Total Bites by Colour"
+ggplot(data, aes(x=Colour..B.RB.G., y=All.Bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Total Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Total Bites by Colour")
+```
+
+
+## Significance in colour for total bites
+
+
+We tested these values to see if there is any significant variation from the null hypothesis that the average number of bites is the same for all three colourways. I used the Kruskal Wallis test to test this hypothesis because the data is not normally distributed and the data is not independent. The results of this test are shown below:
+
+```{r}
+# test the null hypothesis that the average number of bites is the same for all three colourways
+# using the Kruskal Wallis test
+
+test <- kruskal.test(All.Bites ~ Colour..B.RB.G., data=data)
+
+print(test)
+```
+
+## Significance in colour on type of bites
+
+To find the signifiance of the colour based on the bite marks, a box plot was created for each colourway with the bite marks grouped by the type of bite. This was done to illustrate any significant difference between the colourways based on the type of bite.
+
+```{r}
+# plot a box plot of "Bird.bites","Rodent.bites","Insect.bites","Snail.marks" grouped by colour Colour..B.RB.G. from dataset data
+# label the x axis as Colour and the y axis as Number of Total Bites
+# rename the groups where B is Brown, RB is Red and G is Green
+# title the plot "Bird Bites by Colour"
+ggplot(data, aes(x=Colour..B.RB.G., y=Bird.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Bird Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Bird Bites by Colour")
+```
+
+```{r}
+
+# title the plot "Rodent Bites by Colour"
+ggplot(data, aes(x=Colour..B.RB.G., y=Rodent.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Rodent Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Rodent Bites by Colour")
+
+```
+
+```{r}
+
+# title the plot "Insect Bites by Colour"
+ggplot(data, aes(x=Colour..B.RB.G., y=Insect.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Insect Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Insect Bites by Colour")
+
+```
+
+```{r}
+
+# title the plot "Snail Marks by Colour"
+ggplot(data, aes(x=Colour..B.RB.G., y=Snail.marks)) + geom_boxplot() + xlab("Colour") + ylab("Number of Snail Marks") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Snail Marks by Colour")
+```
+
+To test the signifiance of this data a Kruskal Wallis test was used to test the null hypothesis that the average number of bites is the same for all three colourways within each bite type. The results of this test are shown below:
+
+**Birds:**
+```{r}
+# test the null hypothesis that the average number of bites is the same for all three colourways within the bird bites
+# using the Kruskal Wallis test
+
+print(test <- kruskal.test(Bird.bites ~ Colour..B.RB.G., data=data))
+```
+
+**Rodents:**
+```{r}
+# test the null hypothesis that the average number of bites is the same for all three colourways within the rodent bites
+# using the Kruskal Wallis test
+
+print(test <- kruskal.test(Rodent.bites ~ Colour..B.RB.G., data=data))
+```
+
+**Insects:**
+```{r}
+# test the null hypothesis that the average number of bites is the same for all three colourways within the insect bites
+# using the Kruskal Wallis test
+
+print(test <- kruskal.test(Insect.bites ~ Colour..B.RB.G., data=data))
+```
+
+**Snails:**
+```{r}
+# test the null hypothesis that the average number of bites is the same for all three colourways within the snail marks
+# using the Kruskal Wallis test
+
+print(test <- kruskal.test(Snail.marks ~ Colour..B.RB.G., data=data))
+```
+
+
+## Affect of height on bite type
+
+On further interest of the dataset, I examined the relation between the type of bite and the height co-factor that was also recorded. To illustrate this I created a plot of the number of bites of each type for each height. This is shown below:
+
+```{r opts_chunk$set(dpi=600)}
+# for each height in range 0-300 with 10 cm intervals, calculate number of "Bird.bites","Rodent.bites","Insect.bites","Snail.marks" and store in seperate vectors
+pal <- colorRampPalette(c("#0000CD", "#800000", "#FFD700", "#008000"))
+
+bird.bites <- c()
+rodent.bites <- c()
+insect.bites <- c()
+snail.marks <- c()
+
+for (i in seq(0, 300, 10)) {
+  bird.bites <- c(bird.bites, sum(data$Bird.bites[data$Height..cm. == i]))
+  rodent.bites <- c(rodent.bites, sum(data$Rodent.bites[data$Height..cm. == i]))
+  insect.bites <- c(insect.bites, sum(data$Insect.bites[data$Height..cm. == i]))
+  snail.marks <- c(snail.marks, sum(data$Snail.marks[data$Height..cm. == i]))
+}
+
+# plot the number of bites for each height
+# label the x axis as Height and the y axis as Number of Bites
+# title the plot "Number of Bites by Height"
+plot(bird.bites, seq(0, 300, 10), type="o", col="#0000CD", xlab="Number of Bites", ylab="Height (cm)", main="Number of Bites by Height, Categorised by Bite Type", xlim=c(0, 175), ylim=c(0, 300))
+lines(rodent.bites, seq(0, 300, 10),  type="o", col="#800000")
+lines(insect.bites, seq(0, 300, 10), type="o", col="#FFD700")
+lines(snail.marks, seq(0, 300, 10), type="o", col="#008000")
+legend("topright", legend=c("Bird", "Rodent", "Insect", "Snail"), col=c("#0000CD", "#800000", "#FFD700", "#008000"), lty=1)
+```
+
+# Discussion
+
+## Results discussion
+
+
+
+## Considerations of accuracy
+
+## Suggestions for further study
+
+# References

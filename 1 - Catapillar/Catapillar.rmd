@@ -2,7 +2,7 @@
 title: Plasticine Caterpillar Practical
 author: Thomas Holland
 date: 1st November 2022
-output: html_document
+output: tufte::tufte_html
 bibliography: [citations.bib]
 ---
 
@@ -115,6 +115,21 @@ ggplot(data, aes(x=Colour..B.RB.G., y=All.Bites)) + geom_boxplot() + xlab("Colou
 
 ## Significance in colour for total bites
 
+```{r}
+# variable bird_bite_stat for filtering the data for Bird.bites
+bird_bite_stat <- data$Bird.bites > 0
+
+# variable insect_bite_stat for filtering the data for Insect.bites
+insect_bite_stat <- data$Insect.bites > 0
+
+# variable mammal_bite_stat for filtering the data for Mammal.bites
+mammal_bite_stat <- data$Mammal.bites > 0
+
+# variable snail_mark_stat for filtering the data for Snail.marks
+snail_mark_stat <- data$Snail.marks > 0
+
+```
+
 
 We tested these values to see if there is any significant variation from the null hypothesis that the average number of bites is the same for all three colourways. I used the Kruskal Wallis test to test this hypothesis because the data is not normally distributed and the data is not independent. The results of this test are shown below:
 
@@ -129,44 +144,53 @@ print(test)
 
 ## Significance in colour on type of bites
 
-To find the signifiance of the colour based on the bite marks, a box plot was created for each colourway with the bite marks grouped by the type of bite. This was done to illustrate any significant difference between the colourways based on the type of bite.
+To find the significance of the colour based on the bite marks, a box plot was created for each colourway with the bite marks grouped by the type of bite. This was done to illustrate any significant difference between the colourways based on the type of bite.
 
 ```{r}
-# plot a box plot of "Bird.bites","Rodent.bites","Insect.bites","Snail.marks" grouped by colour Colour..B.RB.G. from dataset data
-# label the x axis as Colour and the y axis as Number of Total Bites
-# rename the groups where B is Brown, RB is Red and G is Green
+# box plot of Bird.bites grouped by colour Colour..B.RB.G. from dataset data
+# label the x axis as Colour and the y axis as Number of Bird Bites
+# rename the groups where B is Brown, RB is Red/Black and G is Green
 # title the plot "Bird Bites by Colour"
-ggplot(data, aes(x=Colour..B.RB.G., y=Bird.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Bird Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Bird Bites by Colour")
+
+ggplot(data=data, aes(x=Colour..B.RB.G., y=Bird.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Bird Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Bird Bites by Colour")
 ```
 
 ```{r}
-
-# title the plot "Rodent Bites by Colour"
-ggplot(data, aes(x=Colour..B.RB.G., y=Rodent.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Rodent Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Rodent Bites by Colour")
-
-```
-
-```{r}
-
+# box plot of Insect.bites grouped by colour Colour..B.RB.G. from dataset data
+# label the x axis as Colour and the y axis as Number of Insect Bites
+# rename the groups where B is Brown, RB is Red/Black and G is Green
 # title the plot "Insect Bites by Colour"
-ggplot(data, aes(x=Colour..B.RB.G., y=Insect.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Insect Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Insect Bites by Colour")
 
+ggplot(data=data, aes(x=Colour..B.RB.G., y=Insect.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Insect Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Insect Bites by Colour")
 ```
 
 ```{r}
+# box plot of Rodent.bites grouped by colour Colour..B.RB.G. from dataset data
+# label the x axis as Colour and the y axis as Number of Rodent Bites
+# rename the groups where B is Brown, RB is Red/Black and G is Green
+# title the plot "Rodent Bites by Colour"
 
-# title the plot "Snail Marks by Colour"
-ggplot(data, aes(x=Colour..B.RB.G., y=Snail.marks)) + geom_boxplot() + xlab("Colour") + ylab("Number of Snail Marks") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Snail Marks by Colour")
+ggplot(data=data, aes(x=Colour..B.RB.G., y=Rodent.bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Rodent Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Rodent Bites by Colour")
 ```
 
-To test the signifiance of this data a Kruskal Wallis test was used to test the null hypothesis that the average number of bites is the same for all three colourways within each bite type. The results of this test are shown below:
+
+```{r}
+# box plot of Snail.marks grouped by colour Colour..B.RB.G. from dataset data
+# label the x axis as Colour and the y axis as Number of Snail Marks
+# rename the groups where B is Brown, RB is Red/Black and G is Green
+# title the plot "Snail Marks by Colour"
+
+ggplot(data=data, aes(x=Colour..B.RB.G., y=Snail.marks)) + geom_boxplot() + xlab("Colour") + ylab("Number of Snail Marks") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Snail Marks by Colour")
+```
+
+To test the significance of this data a Kruskal Wallis test was used to test the null hypothesis that the average number of bites is the same for all three colourways within each bite type. The results of this test are shown below:
 
 **Birds:**
 ```{r}
 # test the null hypothesis that the average number of bites is the same for all three colourways within the bird bites
 # using the Kruskal Wallis test
 
-print(test <- kruskal.test(Bird.bites ~ Colour..B.RB.G., data=data))
+print(test <- kruskal.test(Colour..B.RB.G. ~ Bird.bites , data=data))
 ```
 
 **Rodents:**

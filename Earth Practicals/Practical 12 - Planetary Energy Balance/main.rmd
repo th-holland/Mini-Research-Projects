@@ -19,6 +19,8 @@ library(tufte)
 sboltz <- 5.67e-8 # Stefan-Boltzmann constant
 wein <- 2.898e-6
 
+dart.temperature = 4500 # K
+
 athos.distance <- 100
 athos.solar_flux_density <- 2500
 athos.albedo <- 0.2
@@ -132,9 +134,49 @@ Porthos maximum emission wavelength $=`r porthos.lambda.max`$ m
 
 Aramis maximum emission wavelength $=`r aramis.lambda.max`$ m
 
-## Solar 
+## Solar maximum emission wavelength
+
+```{r} 
+
+dart.lambda.max <- wein / dart.temperature
+```
+
+D'art solar maximum emission wavelength $=`r dart.lambda.max`$ m
 
 ## Green house effect (Kelvin)
 
 ```{r}
+athos.temperature.gh <- athos.temperature.bb - athos.temperature.obs
+
+porthos.temperature.gh <- porthos.temperature.bb - porthos.temperature.obs
+
+aramis.temperature.gh <- aramis.temperature.bb - aramis.temperature.obs
+```
+
+Athos greenhouse effect $=`r athos.temperature.gh`$ K
+
+Porthos greenhouse effect $=`r porthos.temperature.gh`$ K
+
+Aramis greenhouse effect $=`r aramis.temperature.gh`$ K
+
+## Inference from the greenhouse effect
+
+The higher greenhouse effect for Athos suggests that the atmosphere is denser than the other planets.
+
+## Plot of blackbody temperature and mean temperatures (y) against distance (x)
+
+```{r}
+x <- c(athos.distance, porthos.distance, aramis.distance)
+y <- c(athos.temperature.bb, porthos.temperature.bb, aramis.temperature.bb)
+y2 <- c(athos.temperature.obs, porthos.temperature.obs, aramis.temperature.obs)
+plot(x, y, type="b", col="red", xlab="Distance (m)", ylab="Temperature (K)", main="Blackbody temperature")
+#plot points for x and y2
+points(x, y2, col="blue")
+lines(x, y2, col="blue")
+legend("topright", legend=c("Blackbody", "Observed"), col=c("red", "blue"), lty=1:1)
+# range of y axis 190 to 350
+axis(2, at=seq(190, 350, by=10))
+```
+
+
 

@@ -1,16 +1,26 @@
 ---
 title: Plasticine Caterpillar Practical
-author: Thomas Holland
+author: Thomas Holland (th675)
 date: 1st November 2022
-output: html_document
+documentclass: article
+classoption: a4paper
+output:
+  pdf_document:
+      toc: true
+      number_sections: true
 bibliography: [citations.bib]
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
 
+library(dunn.test)
 library(ggplot2)
 ```
+
+The code and dataset for this write up can be found at: https://github.com/th-holland/Mini-Research-Projects/tree/main/Evolution%20Practicals/1%20-%20Catapillar 
+
+![QR code](./frame.png){#id .class width=30%}
 
 # Introduction
 
@@ -102,142 +112,174 @@ The averages for the total number of bites per caterpillar are shown in the tabl
 | Green     | `r average.table[2, 2]` | `r sd(data[data$Colour..B.RB.G == "G", ]$All.Bites)` |
 | Red Black     | `r average.table[3, 2]` | `r sd(data[data$Colour..B.RB.G == "RB", ]$All.Bites)` |
 
-This is shown in the box plot below:
+This is shown in the box plot below, with outliers shown as black points and other points shown as as transparent points:
 
 ```{r}
 # plot a box plot of All.Bites grouped by colour Colour..B.RB.G. from dataset data
 # label the x axis as Colour and the y axis as Number of Total Bites
 # rename the groups where B is Brown, RB is Red and G is Green
 # title the plot "Total Bites by Colour"
-ggplot(data, aes(x=Colour..B.RB.G., y=All.Bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Total Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red", "G"="Green")) + ggtitle("Total Bites by Colour")
+#plot the individual points as well as the box plot as light grey points on the left of the box plots
+ggplot(data, aes(x=Colour..B.RB.G., y=All.Bites)) + geom_boxplot() + xlab("Colour") + ylab("Number of Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Number of Bites on each Caterpillar by Colour") + geom_violin(alpha=0.1) # nolint
+
+# plot a bar plot for the sum of the total number of bites, seperated by the colour of the caterpillar
+# label the x axis as Colour and the y axis as Number of Total Bites
+# rename the groups where B is Brown, RB is Red and G is Green
+# title the plot "Total Bites by Colour"
+
+ggplot(data, aes(x=Colour..B.RB.G., y=All.Bites)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Sum of the Bites for each Colour") # nolint
 ```
 
 
-## Significance in colour for total bites
+## Significance of colour for number bites
 
-We tested these values to see if there is any significant variation from the null hypothesis that the average number of bites is the same for all three colourways. I used the Kruskal Wallis test to test this hypothesis because the data is not normally distributed and the data is not independent. The results of this test are shown below:
+I tested these values to see if there is any significant variation from the null hypothesis that the average number of bites is the same for all three colourways. I used the one-way ANOVA test to test this hypothesis because there is three categories from the same categorical group on the independent variable and a continuos dependent variable. The results of this test are shown below:
 
 ```{r}
-# test the null hypothesis that the average number of bites is the same for all three colourways
-# using the Kruskal Wallis test
-
-test <- kruskal.test(All.Bites ~ Colour..B.RB.G., data=data)
-
-print(test)
+# perform a one-way ANOVA test on the data set data with the independent variable Colour..B.RB.G. and the dependent variable All.Bites
+# print the results of the test
+output <-  aov(data$All.Bites ~ data$Colour..B.RB.G)
+summary(output)
 ```
+
+The $p$-value from the test: `r summary(output)[[1]][["Pr(>F)"]][1]`.
+
+The KW test was also run:
+  
+  ```{r}
+  # perform a Kruskal-Wallis test on the data set data with the independent variable Colour..B.RB.G. and the dependent variable All.Bites
+  # print the results of the test
+  output <- dunn.test(data$All.Bites, data$Colour..B.RB.G, kw = TRUE, method = "bonferroni")
+  print(output)
+  ```
+
 
 ## Significance in colour on type of bites
 
 To find the significance of the colour based on the bite marks, a box plot was created for each colourway with the bite marks grouped by the type of bite. This was done to illustrate any significant difference between the colourways based on the type of bite.
 
-```{r}
-# bar chart of sum of Bird.bites  for each colour Colour..B.RB.G. from dataset data
-# label the x axis as Colour and the y axis as Number of Bird Bites
-# rename the groups where B is Brown, RB is Red/Black and G is Green
-# title the plot "Bird Bites by Colour"
 
-ggplot(data, aes(x=Colour..B.RB.G., y=Bird.bites)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Bird Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Bird Bites by Colour")
+To test the significance of this data a ANOVA test was used to test the null hypothesis that the number of bites is the same for all three colourways within each bite type.
+
+The KW test was run to test the null hypothesis that the number of bites from birds is the same for all three colourways.
+
+### Birds
+```{r}
+# set variable bird.r to the sum of the number of bites from birds for the red/black caterpillars, where the colour is RB in the Colour..B.RB.G. column of the data set data
+bird.r <- sum(data[data$Colour..B.RB.G == "RB", ]$Bird.bites)
+bird.b <- sum(data[data$Colour..B.RB.G == "B", ]$Bird.bites)
+bird.g <- sum(data[data$Colour..B.RB.G == "G", ]$Bird.bites)
+
+# plot as bar plot
+
+ggplot(data.frame(x=c("Red/Black", "Brown", "Green"), y=c(bird.r, bird.b, bird.g)), aes(x=x, y=y)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Bites") + ggtitle("Number of Bites from Birds by Colour") # nolint
+# perform a one-way ANOVA test on the data set data with the independent variable Colour..B.RB.G. and the dependent variable Bird.bites
+# print the results of the test
+print(summary(aov(data$Bird.bites ~ data$Colour..B.RB.G)))
 ```
 
 ```{r}
-# bar chart of sum of Insect.bites  for each colour Colour..B.RB.G. from dataset data
-# label the x axis as Colour and the y axis as Number of Bird Bites
-# rename the groups where B is Brown, RB is Red/Black and G is Green
-# title the plot "Bird Bites by Colour"
+# kw test
+print(dunn.test::dunn.test(data$Bird.bites, data$Colour..B.RB.G, kw = TRUE, method = "bonferroni"))
+```
 
-ggplot(data, aes(x=Colour..B.RB.G., y=Insect.bites)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Insect Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Insect Bites by Colour")
+
+### Rodents
+```{r}
+rodent.r <- sum(data[data$Colour..B.RB.G == "RB", ]$Rodent.bites)
+rodent.b <- sum(data[data$Colour..B.RB.G == "B", ]$Rodent.bites)
+rodent.g <- sum(data[data$Colour..B.RB.G == "G", ]$Rodent.bites)
+
+ggplot(data.frame(x=c("Red/Black", "Brown", "Green"), y=c(rodent.r, rodent.b, rodent.g)), aes(x=x, y=y)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Bites") + ggtitle("Number of Bites from Rodents by Colour") # nolint
+# perform a one-way ANOVA test on the data set data with the independent variable Colour..B.RB.G. and the dependent variable Rodent.bites
+# print the results of the test
+
+print(summary(aov(data$Rodent.bites ~ data$Colour..B.RB.G)))
 ```
 
 ```{r}
-# bar chart of sum of Rodent.bites  for each colour Colour..B.RB.G. from dataset data
-# label the x axis as Colour and the y axis as Number of Bird Bites
-# rename the groups where B is Brown, RB is Red/Black and G is Green
+# kw test
+print(dunn.test::dunn.test(data$Rodent.bites, data$Colour..B.RB.G, kw = TRUE, method = "bonferroni"))
+```
 
-ggplot(data, aes(x=Colour..B.RB.G., y=Rodent.bites)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Rodent Bites") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Rodent Bites by Colour")
+
+### Insects
+```{r}
+insect.r <- sum(data[data$Colour..B.RB.G == "RB", ]$Insect.bites)
+insect.b <- sum(data[data$Colour..B.RB.G == "B", ]$Insect.bites)
+insect.g <- sum(data[data$Colour..B.RB.G == "G", ]$Insect.bites)
+
+ggplot(data.frame(x=c("Red/Black", "Brown", "Green"), y=c(insect.r, insect.b, insect.g)), aes(x=x, y=y)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Bites") + ggtitle("Number of Bites from Insects by Colour") # nolint
+
+# perform a one-way ANOVA test on the data set data with the independent variable Colour..B.RB.G. and the dependent variable Insect.bites
+# print the results of the test
+
+print(summary(aov(data$Insect.bites ~ data$Colour..B.RB.G)))
 ```
 
 ```{r}
-# bar chart of sum of Snail.marks  for each colour Colour..B.RB.G. from dataset data
-# label the x axis as Colour and the y axis as Number of Bird Bites
-# rename the groups where B is Brown, RB is Red/Black and G is Green
-
-ggplot(data, aes(x=Colour..B.RB.G., y=Snail.marks)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Snail Marks") + scale_x_discrete(labels=c("B"="Brown", "RB"="Red/Black", "G"="Green")) + ggtitle("Snail Marks by Colour")
+# kw test
+print(dunn.test::dunn.test(data$Insect.bites, data$Colour..B.RB.G, kw = TRUE, method = "bonferroni"))
 ```
 
-
-To test the significance of this data a Chi Squared test was used to test the null hypothesis that the number of bites is the same for all three colourways within each bite type, at the 5% significance level. The results of this test are shown below:
-
-**Birds:**
+### Snails
 ```{r}
-# test the null hypothesis that the number of bites is the same for all three colourways within each bite type
-# using the Chi Squared test
 
-test <- chisq.test(table(data$Colour..B.RB.G., data$Bird.bites > 0))
+snail.r <- sum(data[data$Colour..B.RB.G == "RB", ]$Snail.marks)
+snail.b <- sum(data[data$Colour..B.RB.G == "B", ]$Snail.marks)
+snail.g <- sum(data[data$Colour..B.RB.G == "G", ]$Snail.marks)
+
+ggplot(data.frame(x=c("Red/Black", "Brown", "Green"), y=c(snail.r, snail.b, snail.g)), aes(x=x, y=y)) + geom_bar(stat="identity") + xlab("Colour") + ylab("Number of Bites") + ggtitle("Number of Bites from Snails by Colour") # nolint
+# perform a one-way ANOVA test on the data set data with the independent variable Colour..B.RB.G. and the dependent variable Snail.marks
+# print the results of the test
+
+print(summary(aov(data$Snail.marks ~ data$Colour..B.RB.G)))
 ```
 
-**Rodents:**
 ```{r}
-# test the null hypothesis that the number of bites is the same for all three colourways within each bite type
-# using the Chi Squared test
-
-test <- chisq.test(table(data$Colour..B.RB.G., data$Rodent.bites > 0))
-```
-
-**Insects:**
-```{r}
-# test the null hypothesis that the number of bites is the same for all three colourways within each bite type
-# using the Chi Squared test
-
-test <- chisq.test(table(data$Colour..B.RB.G., data$Insect.bites > 0))
-```
-
-**Snails:**
-```{r}
-# test the null hypothesis that the number of bites is the same for all three colourways within each bite type
-# using the Chi Squared test
-
-test <- chisq.test(table(data$Colour..B.RB.G., data$Snail.marks > 0))
-```
-
-
-## Affect of height on bite type
-
-On further interest of the dataset, I examined the relation between the type of bite and the height co-factor that was also recorded. To illustrate this I created a plot of the number of bites of each type for each height. This is shown below:
-
-```{r opts_chunk$set(dpi=600)}
-# for each height in range 0-300 with 10 cm intervals, calculate number of "Bird.bites","Rodent.bites","Insect.bites","Snail.marks" and store in seperate vectors
-pal <- colorRampPalette(c("#0000CD", "#800000", "#FFD700", "#008000"))
-
-bird.bites <- c()
-rodent.bites <- c()
-insect.bites <- c()
-snail.marks <- c()
-
-for (i in seq(0, 300, 10)) {
-  bird.bites <- c(bird.bites, sum(data$Bird.bites[data$Height..cm. == i]))
-  rodent.bites <- c(rodent.bites, sum(data$Rodent.bites[data$Height..cm. == i]))
-  insect.bites <- c(insect.bites, sum(data$Insect.bites[data$Height..cm. == i]))
-  snail.marks <- c(snail.marks, sum(data$Snail.marks[data$Height..cm. == i]))
-}
-
-# plot the number of bites for each height
-# label the x axis as Height and the y axis as Number of Bites
-# title the plot "Number of Bites by Height"
-plot(bird.bites, seq(0, 300, 10), type="o", col="#0000CD", xlab="Number of Bites", ylab="Height (cm)", main="Number of Bites by Height, Categorised by Bite Type", xlim=c(0, 175), ylim=c(0, 300))
-lines(rodent.bites, seq(0, 300, 10),  type="o", col="#800000")
-lines(insect.bites, seq(0, 300, 10), type="o", col="#FFD700")
-lines(snail.marks, seq(0, 300, 10), type="o", col="#008000")
-legend("topright", legend=c("Bird", "Rodent", "Insect", "Snail"), col=c("#0000CD", "#800000", "#FFD700", "#008000"), lty=1)
+# kw test
+print(dunn.test::dunn.test(data$Snail.marks, data$Colour..B.RB.G, kw = TRUE, method = "bonferroni"))
 ```
 
 # Discussion
 
 ## Results discussion
 
+The ANOVA test for the difference in number of bites between the colourways returned with a $p$-value of 0.0116, which is much smaller than the normal biological $p$-value used. This means that the dataset we collected suggests that there is reason to reject the null hypothesis that the colour does not affect the number of bites. This means that the colour of the caterpillars does affect the number of bites. This is supported by the box plots of the data, which show that the number of bites is significantly different between the colourways.
+The box plot also supports the results from the Chi Square test that suggests that there is high significance ($p = 0.007$) in the difference between the number of bites in the green and the red-black as well as some significance ($p = 0.13$) in the difference between the number of bites in the green and the brown caterpillars. There is also a small significance ($p=0.394$) in the difference between the number of bites in the red-black caterpillars and the brown caterpillars, however there is over a 60% probability that these results were due to random chance and not a correlation. 
+
+The colour differences in the caterpillars could have affected the number of bites for several reasons. 
+For example, with birds it has been suggested by @hernandez-aguero_effects_2020 that colours can either act to camouflage the caterpillar, such as the brown caterpillar on the brown tree barks, or signal to the predator that the prey may be unpalatable, through aposematic linkage. However, this is not consistent with the data collected, as there was no significant difference between the number of bird bites between the colour groups ($p$-values of 0.84 and 0.69 for the ANOVA and KW test respectively). This could be because the birds were not able to see the colour of the caterpillar, or because the colour of the caterpillar did not affect the birds' decision to bite.
+
+The only significant value that occurred within the rodent data was with the difference between the number of bites in the red-black and the brown caterpillars ($p$-value of 0.11). This could be because the brown caterpillars were more palatable to the rodents, as they were more similar in colour to the tree bark or to their normal food. This is supported by the fact that the brown caterpillars had the highest number of bites from rodents.
+
+There was a high significance in the ANOVA test for the insect bites ($p$-value of 0.0042), which suggests that the colour of the caterpillar does affect the number of bites from insects. This is supported by the KW test, which also suggests that there is a high significance in the difference between the number of bites in the green and the red-black caterpillars ($p$-value of 0.000508). This varies from other sources such as @seifert_predation_2015, however these were collected in different climates with different indigenous insects. This could mean that the insects in the UK are more attracted to the green caterpillars, or that the green caterpillars are more palatable to the insects for other reasons.
+
+There was no significance within the snail data, with $p$-values around 0.5 for both the ANOVA and KW tests. This could be because the snails were not able to see the colour of the caterpillars, or because the snails find food via other means, such as by olfactory cues as was suggested by @teyke_food-attraction_1995.
 
 
 ## Considerations of accuracy
 
+There were several points within this experiment that could have affected the accuracy of the data collected.
+
+Firstly, the data collection, although it was done through a controlled procedure, was still done by different people across the dataset with differing knowledges and subjective interpretations on marks on the models. This could have affected the accuracy of the data collected, as some people may have been more lenient on what they considered a bite or mark, or may have been more strict.
+
+Secondly, although the caterpillars were made via the same procedure, the procedure is limited by the fact that the caterpillars were not able to be made in a controlled environment. This means that the caterpillars were not able to be made in the same conditions, and could have affected the accuracy of the data collected. An example of this is the oils on the hands of the person making the caterpillars, which could have affected the palatability of the caterpillars to the predators.
+
+Thirdly, all the caterpillars displayed the same "behaviours" (i.e. stationary on the side of the tree) which may not be consistent with the varied behaviours utilised by different colours of caterpillars. This could have affected the accuracy of the experiment as either the predators may have been more attracted as there was a more obvious target, or the predators may have been less attracted as the caterpillars were not moving.
+
+Also, an important point to note is that the missing caterpillars were discarded as we were unable to determine what was the cause for the disappearance, however, assuming that the caterpillars were eaten by the predators, this could have affected the accuracy of the data collected. This is because the caterpillars that were eaten by the predators would not have been recorded as a bite, and therefore would not have been included in the data collected. This could have affected the accuracy of the data collected as it would have been a bias towards the caterpillars that were not eaten by the predators via survivorship bias.
+
+Another important note is that the data collectors were under supervision by the experiment leaders, however, the experiment leaders were not present during the data collection. This could have affected the accuracy of the data collected as there could have been mistakes made by the data collectors, accidental or otherwise, which could affect the validity of the results collected.
+
 ## Suggestions for further study
+
+Further areas of interest that could be studied from similar procedures:
+- The effects of varying the concentration of the caterpillars on the number of bites.
+- The effects of the height of the caterpillars on the number of bites.
+- The effects of the size of the caterpillars on the number of bites.
+- Seasonal affects on the number of bites.
+
+To improve the accuracy of the data recorded, it would be beneficial to have motion video traps set up to record the predators' behaviours, as this would allow for more accurate data collection. This would also allow for more accurate data collection of the predators' behaviours, such as the time taken to bite the caterpillar, the number of bites per predator, and the number of predators per caterpillar. This would also allow for more accurate data collection of the missing caterpillars, as the video footage would allow for the predators' behaviours to be recorded, and therefore the missing caterpillars could be determined to have been eaten by the predators or not.
 
 # References

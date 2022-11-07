@@ -31,7 +31,7 @@ These colour patterns were left at set heights on trees of similar dimensions fo
 
 We also recorded several other variables that we thought may have had an affect on the attack rate on the caterpillars. These co-variables included the geographical location (through the College location), the tree species and size (diameter), height at which the caterpillars were set, and the habitat type.
 
-The analysed results showed 
+The analysed results showed significant variation in the number of bite marks between the different colour patterns (ANOVA $p$-value of 0.0116), with the red and black striped caterpillars having the lowest number of bite marks, and the green caterpillars having the highest number of bite marks, with a high significance of the difference (Chi Squared test $p$-value of 0.007). There was no significance within the bird and snail categories in respect to the number of bite marks in each colour pattern, but there was a significant difference between the colours within the insect and rodent categories (ANOVA $p$-value of 0.0042 and 0.0582 respectively).
 
 # Methods
 

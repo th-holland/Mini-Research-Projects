@@ -275,6 +275,7 @@ Another important note is that the data collectors were under supervision by the
 ## Suggestions for further study
 
 Further areas of interest that could be studied from similar procedures:
+
 - The effects of varying the concentration of the caterpillars on the number of bites.
 - The effects of the height of the caterpillars on the number of bites.
 - The effects of the size of the caterpillars on the number of bites.

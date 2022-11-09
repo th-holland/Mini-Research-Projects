@@ -37,7 +37,8 @@ ggplot(b, aes(x = conc, y = abs)) + geom_point() + geom_smooth(method = "lm") + 
 model_b <- lm(abs ~ conc, data = b)
 
 # print the gradient and the intercept with the r value
-print(paste("The linear model is:", model_b[[1]][[1]], "x +", model_b[[1]][[2]], "with $r^2$ =", summary(model_b)$r.squared))
+print(paste("The linear model is:", model_b[[1]][[1]], "x +", model_b[[1]][[2]]))
+print(paste("The r squared value is:", summary(model_b)$r.squared))
 ```
 
 
@@ -76,22 +77,26 @@ model_c_15 <- lm(avg_15 ~ time, data = c[c$time <= 30, ])
 # plot a graph from dataset c for avg_75 vs time with model of model_c_75
 ggplot(c, aes(x = time, y = avg_75)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x) + labs(x = "Time (s)", y = "Absorbance (%)") + ggtitle("75 micro litres")
 #print the equation for the initial rate from the model
-print(paste("Initial rate of reaction (first 30 sec): ", round(model_c_75$coefficients[2], 3), "micro litres per second", "with $r^2$ =", summary(model_c_75)$r.squared))
+print(paste("The equation for the initial rate is:", model_c_75[[1]][[1]], "x +", model_c_75[[1]][[2]]))
+print(paste("The r squared value is:", summary(model_c_75)$r.squared))
 
 # plot a graph from dataset c for avg_50 with initial rate of reaction starting from 0
 ggplot(c, aes(x = time, y = avg_50)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x) + labs(x = "Time (s)", y = "Absorbance (%)") + ggtitle("50 micro litres")
 #print the equation for the initial rate from the model
-print(paste("Initial rate of reaction (first 30 sec): ", round(model_c_50$coefficients[2], 3), "micro litres per second", "with $r^2$ =", summary(model_c_50)$r.squared))
+print(paste("The equation for the initial rate is:", model_c_50[[1]][[1]], "x +", model_c_50[[1]][[2]]))
+print(paste("The r squared value is:", summary(model_c_50)$r.squared))
 
 # plot a graph from dataset c for avg_30 with initial rate of reaction starting from 0
 ggplot(c, aes(x = time, y = avg_30)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x) + labs(x = "Time (s)", y = "Absorbance (%)") + ggtitle("30 micro litres")
 #print the equation for the initial rate from the model
-print(paste("Initial rate of reaction (first 30 sec): ", round(model_c_30$coefficients[2], 3), "micro litres per second", "with $r^2$ =", summary(model_c_30)$r.squared))
+print(paste("The equation for the initial rate is:", model_c_30[[1]][[1]], "x +", model_c_30[[1]][[2]]))
+print(paste("The r squared value is:", summary(model_c_30)$r.squared))
 
 # plot a graph from dataset c for avg_15 with initial rate of reaction starting from 0
 ggplot(c, aes(x = time, y = avg_15)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x) + labs(x = "Time (s)", y = "Absorbance (%)") + ggtitle("15 micro litres")
 #print the equation for the initial rate from the model
-print(paste("Initial rate of reaction (first 30 sec): ", round(model_c_15$coefficients[2], 3), "micro litres per second", "with $r^2$ =", summary(model_c_15)$r.squared))
+print(paste("The equation for the initial rate is:", model_c_15[[1]][[1]], "x +", model_c_15[[1]][[2]]))
+print(paste("The r squared value is:", summary(model_c_15)$r.squared))
 ```
 
 ## Rate graph
@@ -203,10 +208,13 @@ ggplot(e_rate_table, aes(x = temperature, y = rate)) + geom_point() + labs(x = "
 # print the equation for the 50, 60 and 70 degrees celsius datapoints and the r squared value
 e_initial_rate_50_70 <- lm(rate ~ temperature, data = e_rate_table[1:3,])
 print(e_initial_rate_50_70)
-print(summary(e_initial_rate_50_70).r_squared)
 ```
 
 ## Questions
+
+1. There is a small increase in the initial rate of reaction from 60 to 70 degrees, followed by a sudden drop between 70 and 80 degrees to almost 0, and no change between 80 and 90.
+
+2. The lysozyme may have this effect because at lower temperatures, the disulfide bridges are very strong and so minimise the effects of increased temperatures, hence it can still function. An increased temperature may also mean that the substrates have a higher kinetic energy, so there are more collisions between the substrate and the active site, hence explaining the increase in temperature between 60 and 70. This also makes sense because as lysozyme is involved in immune response, it must work well at higher temperatures than the normal body temperature (37 °C). However, by 80 degrees, the disulfide bridged break, hence it denatured and the enzyme activity decreases.
 
 # (F) The search for lysozymes
 
@@ -235,14 +243,18 @@ f_rate_table$rate <- abs(f_rate_table$rate)
 print(f_rate_table)
 
 # plot a graph from dataset f for avg vs time with model of model_f and model for 0, 10 and 20 seconds
-ggplot(f, aes(x = time, y = avg)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x) + labs(x = "Time (s)", y = "Absorbance (%)") + ggtitle("Change in absorbance over time for saliva Lysozyme") + geom_smooth(method = "lm", formula = y ~ x, data = f[1:3,])
+ggplot(f, aes(x = time, y = avg)) + geom_point() + geom_smooth(method = "lm", formula = y ~ x) + labs(x = "Time (s)", y = "Absorbance (%)") + ggtitle("Change in absorbance over time for saliva Lysozyme")
 
 model_f_13 <- lm(avg ~ time, data = f[1:3,])
 #print the linear model for 1:3 and the r squared value
-print(paste("y = ", model_f_13$coefficients[2], "x + ", model_f_13$coefficients[1]))
+print(paste("linear model using first three values: y = ", model_f_13$coefficients[2], "x + ", model_f_13$coefficients[1]))
 ```
 
 ## Questions
+
+1. The initial rate of reaction was `r model_f_13$coefficients[2]` % absorbance per second.
+
+2. First boil and add a reducing agent to the solution containing the spit, and repeat the experiment (i.e. measure the change in absorbance over 30 seconds). If the breakdown of peptidoglycan is due to an enzyme, no change in absorbance should be seen in the experiment. To prove that the enzyme is lysozyme, several dilutions of the saliva could be made. If a graph of initial rate over concentration was plotted, the Vmax and Km could be calculated. These could be compared to those of a solution containing only lysozyme, and if the results match up then they should be the same enzyme.
 
 # (G) The effect of denaturing the lysozymes on activity
 
@@ -264,7 +276,7 @@ g <- read_excel("Book.xlsx", sheet = "G", col_names = TRUE)
 
 ## Questions
 
-1. It does, as the amino acids glutamine and asparagine that are involved in the catalysis of peptidoglycan require the pH to be slightly acidic so that glutamine is protonated.
+1. The hydrogen bonds, van der waal interactions and disulfide bridges holding the tertiary structure together are disrupted, and forms different bonds to find the most stable arangement, hence the enzyme loses the specific shape of the active site and can no longer catalyse the reaction. The enzyme is said to be denatured.
 
 2. Because when the protein is heated it forms new hydrogen and van der waal bonds without order, which remain when the enzyme is cooled down, so it forms a different tertiary structure, so the active site is no longer complementary to the peptidoglycan, so cannot catalyse the reaction.
 
@@ -276,7 +288,6 @@ knitr::include_graphics("./sds.png")
 
 4. Dithiothreitol is the threo-diastereomer of 1,4-dimercaptobutane-2,3-diol. It has a role as a reducing agent.
 Image of DTT: 
-```{r, out.width = "400px"}
+```{r, out.width = "200px"}
 knitr::include_graphics("./dtt.png")
 ```
-

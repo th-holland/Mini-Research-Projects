@@ -48,8 +48,15 @@ print(paste(KtoC(temp_forcing(0)), "C"))
 
 # 1.5
 
-dT <- function(dt, effect_heat_cap, T_initial) {
-    return((dt/effect_heat_cap) * (((solar_constant/4) * (1 - albedo)) - (emissivity * sb_constant * T_initial^4)))
+delta_resultant_forcing <- function(temp1, temp2) {
+    input <- (solar_constant/4) * (1 - albedo)
+    output <- emissivity * sb_constant * (temp1-temp2)^4
+    return(input - output)
+}
+dT <- function(dt, effect_heat_cap, T_n, T_n1) {
+    # dT = (dt/effect_heat_cap) * delta_resultant_forcing(T_n, T_n1)
+    return((dt/effect_heat_cap) * delta_resultant_forcing(T_n, T_n1))
 }
 
-print(dT(dt = 1, effect_heat_cap = 1, T_initial = 1))
+print("1.5")
+# generate vector for inital temperature 260K and the effect heat capacity of 

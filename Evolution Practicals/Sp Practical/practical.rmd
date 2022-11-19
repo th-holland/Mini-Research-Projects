@@ -1,0 +1,31 @@
+---
+title: Plasticine Caterpillar Practical
+author: Thomas Holland (th675)
+date: 1st November 2022
+documentclass: article
+classoption: a4paper
+output:
+  pdf_document:
+      toc: true
+      number_sections: true
+bibliography: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#package import
+library(tidyverse)
+library(ggplot2)
+library(readr)
+```
+
+# Introduction
+
+# Data cleaning
+
+```{r}
+
+```

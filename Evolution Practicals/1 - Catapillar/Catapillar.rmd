@@ -234,6 +234,8 @@ ggplot(data.frame(x=c("Red/Black", "Brown", "Green"), y=c(snail.r, snail.b, snai
 # print the results of the test
 
 print(summary(aov(data$Snail.marks ~ data$Colour..B.RB.G)))
+
+#format in markdown table
 ```
 
 ```{r}

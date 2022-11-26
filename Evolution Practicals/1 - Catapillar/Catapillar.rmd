@@ -5,9 +5,13 @@ date: 1st November 2022
 documentclass: article
 classoption: a4paper
 output:
-  pdf_document:
+    md_document:
       toc: true
+      toc_depth: 3
       number_sections: true
+  # pdf_document:
+  #     toc: true
+  #     number_sections: true
 bibliography: [citations.bib]
 ---
 

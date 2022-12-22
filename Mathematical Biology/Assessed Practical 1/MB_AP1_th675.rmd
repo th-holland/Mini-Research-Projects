@@ -1,0 +1,161 @@
+---
+title: "R Markdown"
+author: "Thomas Holland (th675)"
+date: "December 22, 2022"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# libraries used can be installed using the following commands
+# install.packages("tidyverse")
+# install.packages("rmarkdown")
+
+# load libraries
+library(tidyverse)
+```
+
+# Inital data import
+
+## Import data
+
+```{r}
+# load data from data.csv using read_csv from the tidyverse package
+data <- read_csv("data.csv")
+
+# head of data to check it loaded correctly
+
+head(data)
+```
+
+## Data cleaning
+
+```{r}
+# print number of rows with missing values
+sum(is.na(data))
+```
+
+## Log transformation of size data
+
+```{r}
+# add new column to data with natural log transformed length
+
+data <- data %>% 
+    mutate(log_length = log(length))
+
+head(data)
+
+```
+
+# Basic examination of data
+
+## Box plot of data
+
+```{r}
+# box plot of length, grouped by sex from the dataset data, using the ggplot2 package. 
+
+ggplot(data, aes(length, sex)) + 
+    geom_boxplot() + 
+    geom_jitter(width = 0, height = 0.2, alpha = 0.2) +  # added jitter so overlapping points are visible
+    theme_bw() +
+    labs(title="Box plot of lengths grouped by the sex of the organism", x="Length (mm)" , y="Sex")
+```
+
+```{r}
+# box plot of lengths, grouped by sex from the dataset data, using the ggplot2 package. Add x scale every 10 mm
+
+ggplot(data, aes(length, sex)) + 
+    geom_boxplot() + 
+    geom_jitter(width = 0, height = 0.2, alpha = 0.2) +  # added jitter so overlapping points are visible
+    theme_bw() +
+    coord_trans(x = "log") + # transform the x axis to natural  log scale
+    scale_x_continuous(breaks = seq(0, 100, 10)) + # add more values to the x axis
+    labs(title="Box plot of log adjusted lengths grouped by the sex of the organism", x="Length (mm), log scale" , y="Sex")
+```
+
+# Statistical tests
+
+This section contains the results of the statistical tests carried out on the data. The analysis of these results and comments are in the analysis section.
+
+## Binomial test
+
+Carry out and report the results of a binomial test to evaluate whether the sex ratio of the sample deviates from 1:1.
+
+```{r}
+binomial <- binom.test(table(data$sex), p = 0.5, alternative = "two.sided", conf.level = 0.95)
+
+binomial
+```
+
+## T-test
+
+Carry out and report the results of a t-test to evaluate whether females and males differ in size.
+
+```{r}
+ttest <- t.test(data$length ~ data$sex, alternative = "two.sided", conf.level = 0.95)
+
+ttest
+```
+
+### Diagnostic plots for t-test
+
+Use histogram for diagnostic plots for the t-test.
+
+```{r}
+ggplot(data = data, aes(x = length)) + 
+    geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue") + 
+    geom_density(alpha = 0.2, fill = "red") + 
+    facet_wrap(~sex, ncol = 1) + 
+    theme_bw() +
+    labs(title="Histogram of lengths grouped by sex", x="Length (mm)" , y="Density")
+```
+
+## Mann-Whitney U test
+
+Non-parametric alternative to the t-test.
+
+```{r}
+mannwhitney <- wilcox.test(data$length ~ data$sex, alternative = "two.sided", conf.level = 0.95)
+
+mannwhitney
+```
+
+## T-test on log transformed data
+
+```{r}
+ttest_log <- t.test(log(data$length) ~ data$sex, alternative = "two.sided", conf.level = 0.95)
+
+ttest_log
+```
+
+### Diagnostic plots for t-test on log transformed data
+
+```{r}
+ggplot(data = data, aes(x = length)) + 
+    geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue") + 
+    geom_density(alpha = 0.2, fill = "red") + 
+    facet_wrap(~sex, ncol = 1) + 
+    theme_bw() +
+    coord_trans(x = "log") + # transform the x axis to natural  log scale
+    scale_x_continuous(breaks = seq(0, 100, 10)) + # add more values to the x axis
+    labs(title="Histogram of lengths grouped by sex", x="Length (mm), log scale" , y="Density")
+```
+
+## F test for ANOVA
+
+```{r}
+anova <- aov(data$length ~ data$sex)
+
+summary(anova)
+```
+
+```{r}
+anova_log <- aov(log(data$length) ~ data$sex)
+
+summary(anova_log)
+```
+
+# Analysis
+
+The box plot of the data showed that there was a greater spread of data within the male group than the female group (ANOVA test F = `r paste(anova$`F value`, anova$`Pr(>F)`[1])`)
